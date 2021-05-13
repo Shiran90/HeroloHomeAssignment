@@ -13,7 +13,7 @@ module.exports.register = async (req, res) => {
     const user = new User({id, name, username})
     const registeredUser = await User.register(user, password);
 
-    res.status(200).send(id);
+    res.status(200).send({id});
   }
 
 
