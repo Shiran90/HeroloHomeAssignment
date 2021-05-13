@@ -39,6 +39,9 @@ passport.deserializeUser(User.deserializeUser());
 app.use('/users', userRoutes);
 app.use('/messages', messageRoutes);
 
+app.get('/test', (req, res) => {
+  res.send("test ok")
+})
 
 const mongoose = require('mongoose');
 mongoose.connect(config.database_conecting_string, {useNewUrlParser: true, useUnifiedTopology: true})
