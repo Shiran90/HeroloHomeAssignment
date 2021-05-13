@@ -22,7 +22,7 @@ module.exports.createNewMsg = async (req, res, next) => {
 
   module.exports.getAllUserMsgs = async (req, res) => {
     const id = req.user.id;
-    const messages = await Message.find({recieverId: id}).select({"_v": 0, "_id": 0})
+    const messages = await Message.find({recieverId: id}).select({"__v": 0, "_id": 0})
 
     res.status(200).send(messages);
   }
@@ -30,7 +30,7 @@ module.exports.createNewMsg = async (req, res, next) => {
 
   module.exports.getAllUserUnreadMsgs = async (req, res) => {
     const id = req.user.id;
-    const messages = await Message.find({recieverId: id, hasRead: false}).select({"_v": 0, "_id": 0})
+    const messages = await Message.find({recieverId: id, hasRead: false}).select({"__v": 0, "_id": 0})
 
     res.status(200).send(messages);
   }
@@ -40,7 +40,7 @@ module.exports.createNewMsg = async (req, res, next) => {
     const userId = req.user.id;
     const messageId = req.params.id;
 
-    const message = await Message.findOne({recieverId: userId, id: messageId}).select({"_v": 0, "_id": 0})
+    const message = await Message.findOne({recieverId: userId, id: messageId}).select({"__v": 0, "_id": 0})
 
     if(message == null){
         return next(new ExpressError('ERROR: message not found', 404));
