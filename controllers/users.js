@@ -1,5 +1,5 @@
 
-const { v4: uuidv4 } = require('uuid');
+const short = require('short-uuid');
 const ExpressError = require('../utils/ExpressError')
 const catchAsync = require('../utils/catchAsync');
 const passport = require('passport');
@@ -7,15 +7,13 @@ const User = require('../models/user');
 
 
 module.exports.register = async (req, res) => {
-    console.log("--------------user register");
     const {name, username, password} = req.body;
-    const id = uuidv4();
+    const id = short.generate();
   
     const user = new User({id, name, username})
     const registeredUser = await User.register(user, password);
-    console.log(registeredUser);
-    res.status(200).send(registeredUser);
-    console.log(`--------------user ${username} registerred`);
+
+    res.status(200).send(id);
   }
 
 
@@ -31,17 +29,14 @@ module.exports.register = async (req, res) => {
         if (err) { 
             return next(err); 
         }
-        res.status(200).send(user.username);
+        res.status(200).send('SUCCESS: user logged in successfully');
       });
     })(req, res, next);
   }
 
 
+  //fetch users list to allow the user to choose the recipient in the frontend
   module.exports.getAllUsers = async (req, res, next) => {
-    console.log("--------------get all users");
-
-    const users = await User.find();
-    res.send(users);
-    console.log(users);
-
+    const users = await User.find().select({"__v": 0, "_id": 0});
+    res.status(200).send(users);
   }

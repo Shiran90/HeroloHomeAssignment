@@ -1,125 +1,97 @@
 
-const { v4: uuidv4 } = require('uuid');
+const short = require('short-uuid');
 const ExpressError = require('../utils/ExpressError')
 const Message = require('../models/message');
-
+const User = require('../models/user');
 
 
 module.exports.createNewMsg = async (req, res, next) => {
-    console.log("--------------new message");
-
-    //if user loggedin
-    // if(!req.isAuthenticated()){
-    //     // return res.status(401).send("user must loggedin")
-    //     return next(new ExpressError("user must loggedin", 401));
-    // }
     const {recieverName, recieverId, message, subject} = req.body;
-
-    console.log(req.user);
-
-    const senderName = req.user.username;
+    const senderName = req.user.name;
     const senderId = req.user.id;
 
     //create id to the new msg
-    const id = uuidv4();
+    const id = short.generate();
    
-    const NewMessage = new Message({senderName, recieverName, recieverId, senderId, message, subject, id});
-    await NewMessage.save();
+    const newMessage = new Message({senderName, recieverName, recieverId, senderId, message, subject, id});
+    await newMessage.save();
 
-    res.send(message);
-    
-    console.log(`--------------message 
-    from: ${senderName}
-    to: ${recieverName},
-    subject: ${subject},
-    message: ${message} 
-    stored--------------------------------`);
+    res.status(200).send("SUCCESS: message sent");
   }
 
 
-  module.exports.getAllMsgsForUser = async (req, res) => {
-    console.log("--------------get all messages");
-
-    // if(!req.isAuthenticated()){
-    //     return res.status(401).send("user must loggedin")
-    // }
-
+  module.exports.getAllUserMsgs = async (req, res) => {
     const id = req.user.id;
+    const messages = await Message.find({recieverId: id}).select({"_v": 0, "_id": 0})
 
-    const messages = await Message.find({recieverId: id})
-    console.log(messages);
-
-    res.send(messages);
+    res.status(200).send(messages);
   }
 
 
-  module.exports.getAllUnreadMsgsForUser = async (req, res) => {
-    console.log("--------------get all unread messages");
-
-    // if(!req.isAuthenticated()){
-    //     return res.status(401).send("user must loggedin")
-    // }
-
+  module.exports.getAllUserUnreadMsgs = async (req, res) => {
     const id = req.user.id;
+    const messages = await Message.find({recieverId: id, hasRead: false}).select({"_v": 0, "_id": 0})
 
-    const messages = await Message.find({recieverId: id, hasRead: false})
-    console.log(messages);
-
-    res.send(messages);
+    res.status(200).send(messages);
   }
 
 
   module.exports.readMsg = async (req, res, next) => {
-    console.log("--------------read a message");
-
-    // if(!req.isAuthenticated()){
-    //     return res.status(401).send("user must loggedin")
-    // }
-
     const userId = req.user.id;
     const messageId = req.params.id;
 
-    const message = await Message.findOne({recieverId: userId, id: messageId})
-    console.log(message);
+    const message = await Message.findOne({recieverId: userId, id: messageId}).select({"_v": 0, "_id": 0})
 
     if(message == null){
-        return next(new ExpressError('message Not Found', 404));
+        return next(new ExpressError('ERROR: message not found', 404));
     }
 
-    //update unread to true
+    //update unread field to true
     await Message.updateOne(
         {recieverId: userId, id: messageId},
         { $set: { hasRead: true } }
      );
 
-    res.send(message);
+    res.status(200).send(message);
   }
 
 
   module.exports.deleteMsg = async (req, res, next) => {
-    console.log("--------------delete a message");
-
-    // if(!req.isAuthenticated()){
-    //     return res.status(401).send("user must loggedin")
-    // }
-
-    //const userId = req.user.id;
+    const userId = req.user.id;
     const messageId = req.params.id;
 
-    //const message = await Message.findOne({id: messageId})
-    //console.log(message);
+    const message = await findMsgById(messageId);
 
-    // if(message == null){
-    //     return next(new ExpressError('message Not Found', 404));
-    // }
+    if(message == null){
+      return next(new ExpressError('ERROR: message not found', 404));
+  }
 
-    // if(message.recieverId !== userId && message.senderId !== userId){
-    //     //not the sender and not the reciever
-    //     return next(new ExpressError('not allowed', 404));
-    // }
+  //check if the user is the sender (owner) of the msg or the reciever 
+    const isAllowed = await isAllowedToDelete(userId, message.recieverId, message.senderId);
 
+    if (!isAllowed){
+      return next(new ExpressError('ERROR: user is not allowed to delete this message', 404));
+    }
     //delete
     const deletedMsg = await Message.deleteOne({id: messageId});
 
-    res.send(deletedMsg);
+    res.send(`SUCCESS: message deleted ${messageId}`);
   }
+
+
+  //check if the user is the sender or the reciever of the message
+const isAllowedToDelete = async (userId, recieverId, senderId) => {
+    if(recieverId !== userId && senderId !== userId){
+        //not the sender nor the reciever
+        return false;
+    }
+    return true;
+}
+
+
+const findMsgById = async (messageId) => {
+  const message = await Message.findOne({id: messageId})
+    console.log(message);
+
+    return message;
+}

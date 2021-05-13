@@ -56,21 +56,17 @@ mongoose.set('useCreateIndex', true);
 
   //unknown route
   app.all('*', (req, res, next) => {
-    console.log("unknown route")
-    next(new ExpressError('Page Not Found', 404));
+    next(new ExpressError('ERROR: page not found', 404));
   })
 
   app.use((err, req, res, next) => {
-    console.log("error");
-    //console.log(err);
     const { statusCode = 500, message = "error"} = err;
     res.status(statusCode).send(message);
   })
 
 app.listen(port, () => {
-  console.log(`Example app listening at http://localhost:${port}`)
+  console.log(`app listening at http://localhost:${port}`)
 })
-/////////////////////////////////////////////////
 
 
 
