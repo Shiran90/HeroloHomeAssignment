@@ -8,7 +8,7 @@ const users = require('../controllers/users');
 router.post('/register', catchAsync(users.register));
 
 //login
-router.get('/login', users.login);
+router.post('/login', users.login);
 
 //get all users to allow the user to choose the recipient in the frontend
 router.get('/', catchAsync(users.getAllUsers));
