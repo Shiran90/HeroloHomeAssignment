@@ -7,7 +7,8 @@ nconf.env().file({ file:configFilePath });
 
 
 const configuration = {
-    database_conecting_string: nconf.get('database_conecting_string')
+    database_conecting_string: nconf.get('database_conecting_string'),
+    server_port: nconf.get('server_port')
 };
 console.log(JSON.stringify(configuration, null, 2))
 

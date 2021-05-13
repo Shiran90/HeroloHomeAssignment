@@ -11,7 +11,7 @@ const messageRoutes = require('./routes/messages')
 
 
 const app = express()
-const port = 3000
+const port = config.server_port;
 
 
 app.use(express.json()) // for parsing application/json
