@@ -1,12 +1,14 @@
 const express = require('express');
 const passport = require('passport');
 const LocalStrategy = require('passport-local');
-const User = require('./models/user');
 const session = require('express-session')
-const ExpressError = require('./utils/ExpressError')
 
+const config = require('./configuration')
+const User = require('./models/user');
+const ExpressError = require('./utils/ExpressError')
 const userRoutes = require('./routes/users');
 const messageRoutes = require('./routes/messages')
+
 
 const app = express()
 const port = 3000
@@ -39,7 +41,7 @@ app.use('/messages', messageRoutes);
 
 
 const mongoose = require('mongoose');
-mongoose.connect('mongodb://localhost:27017/messageDB', {useNewUrlParser: true, useUnifiedTopology: true})
+mongoose.connect(config.database_conecting_string, {useNewUrlParser: true, useUnifiedTopology: true})
 .then(()=> {
   console.log("db conected")
 })
