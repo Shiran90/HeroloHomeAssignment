@@ -35,14 +35,3 @@ const Message = mongoose.model('Message', messageSchema);
 
 
 module.exports = Message;
-// // messageSchema.methods.getAllUnreadedMsgs = function() {
-
-// // }
-
-// const getAllUnreadedMsgs = () => {
-//   const unread = await Message.filter((msg) => {msg.hasRead === false});
-//   return unread;
-
-//   const unread = Character.find({ hasRead: false });
-//   return unread.get
-// }
